@@ -1,18 +1,23 @@
-import torch
 import torch.nn as nn
+
 
 class MLP(nn.Module):
 
-    def __init__(self, input_size, hidden_size, num_classes):
+    def __init__(self, model_arch):
         super(MLP, self).__init__()
-        self.l1 = nn.Linear(input_size, hidden_size)
+        self.camadas = nn.ModuleList([nn.Linear(before, after)
+                                      for before, after in model_arch.parse_architecture()])  # achar nomes melhores
+
         self.relu = nn.ReLU()
-        self.l2 = nn.Linear(hidden_size, num_classes)
 
     def forward(self, X):
-        # first_layer
-        out = self.l1(X)
-        out = self.relu(out)
-        # second_layer
-        out = self.l2(out)
+        """
+        Precisa ter esse out inicializando fora do for ?
+        """
+        out = self.camadas[0](X)
+
+        for camada in self.camadas[1:]:
+            out = self.relu(out)
+            out = camada(out)
+
         return out
