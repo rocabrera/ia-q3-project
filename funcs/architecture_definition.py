@@ -14,3 +14,8 @@ class ModelArchitecture:
         """
         aux = [self.input_size] + self.hidden_size + [self.output_size]
         return [(before, after) for before, after in zip(aux, aux[1:])]
+
+    def __repr__(self) -> str:
+        return (str(self.input_size) + ', (' + str(len(self.hidden_size)) + ','
+                + repr(self.hidden_size) + '), ' + str(self.output_size))
+            
