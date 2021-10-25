@@ -38,11 +38,8 @@ train_loader = DataLoader(dataset=train_dataset, shuffle=True, batch_size=batch_
 
 
 # model network definition
-input_size = 16
-output_size = 7
-hidden_size = [10]
 
-arch1 = ModelArchitecture(16, [100, 50, 20])
+arch1 = ModelArchitecture(16, [10])
 model = MLP(arch1)
 
 learn_rate = 0.01
@@ -51,8 +48,10 @@ optimizer = torch.optim.Adam(model.parameters(), lr=learn_rate)
 
 # training definition
 num_epochs = 100
-device = "cpu"
-n_total_steps_train = len(train_loader)
+if (torch.cuda.is_available()):
+    device = "cuda"
+else:
+    device = "cpu"
 parameters = (num_epochs, criterion, optimizer, device)
 ev1 = Evaluate(model, train_loader, eval_loader, test_loader, parameters)
 ev1.train()
