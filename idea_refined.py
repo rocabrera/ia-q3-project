@@ -10,8 +10,9 @@ from funcs.model import MLP
 from funcs.custom_Databases import BeansDataset
 from funcs.architecture_definition import ModelArchitecture
 from funcs.core import Evaluate
+import funcs.raw_data_processing as rdp
 
-# getting data
+"""# getting data
 df = pd.read_excel(os.path.join("data", "Dry_Bean_Dataset.xlsx"))
 y = df["Class"]
 y = y.astype("category").cat.codes
@@ -25,7 +26,13 @@ X_forTraining, X_test, y_forTraining, y_test = train_test_split(
     X, y, stratify=y, test_size=0.2, random_state=42)
 X_train, X_eval, y_train, y_eval = train_test_split(
     X_forTraining, y_forTraining, stratify=y_forTraining, test_size=0.1, random_state=33)
+"""
 
+train_pack, eval_pack, test_pack, size_pack = rdp.split_data_from(os.path.join("data", "Dry_Bean_Dataset.xlsx")
+                                                                   , 0.2, 0.1 )
+X_test , y_test = test_pack
+X_eval , y_eval = eval_pack
+X_train , y_train = train_pack
 # datasets and dataloaders
 test_dataset = BeansDataset(X_test.to_numpy(), y_test.to_numpy())
 eval_dataset = BeansDataset(X_eval.to_numpy(), y_eval.to_numpy())
