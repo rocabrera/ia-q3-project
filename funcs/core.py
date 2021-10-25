@@ -1,6 +1,6 @@
 
 import torch
-import torch.nn as nn
+import torch.nn
 import numpy as np
 from torch.utils.data import DataLoader
 from funcs.model import MLP
@@ -90,4 +90,5 @@ class Evaluate():
     def report_final_result(self):
         # testagem final
         acc, average_loss = self.test_using(self.test_loader)
-        print((repr(self.model) + f'; Desempenho: accuracy equals {acc:.3f}; average loss equals {average_loss:.3f}'))
+        print((repr(self.model) + '; Criteria: ' + repr(self.criterion) +
+                f'; Desempenho: accuracy equals {acc:.3f}; average loss equals {average_loss:.3f}'))
