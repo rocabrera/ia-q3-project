@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 # in-project imports
-from src.model import MLP
+from src.model.model import MLP
 from src.processing.custom_Databases import BeansDataset
 import src.processing.raw_data_processing as rdp
 from src.model.architecture import ModelArchitecture
