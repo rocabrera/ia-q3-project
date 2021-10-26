@@ -1,10 +1,10 @@
-
 import torch
 import torch.nn
 import numpy as np
 from torch.utils.data import DataLoader
-from funcs.model import MLP
+from src.model import MLP
 from typing import Tuple
+
 
 class Evaluate():
 
@@ -15,15 +15,14 @@ class Evaluate():
                  test_loader: DataLoader,
                  parameters: tuple):
 
-        self.num_epochs, self.criterion, self.optimizer, self.device = parameters
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.num_epochs, self.criterion, self.optimizer = parameters
         self.model = model.to(self.device)
         self.train_loader = train_loader
         self.eval_loader = eval_loader
         self.test_loader = test_loader
         self.n_total_steps_train = len(train_loader)
         self.n_total_steps_eval = len(eval_loader)
-
-        
 
         # Pensar onde vão esses parêmtros depois
         self.eval_history_depth = 10
@@ -47,15 +46,18 @@ class Evaluate():
                 # update model weights
                 self.optimizer.step()
                 print(
-                    f"epoch {epoch + 1} / {self.num_epochs}, step {i + 1}/{self.n_total_steps_train}, loss = {loss.item():.4f}")
+                    f"epoch {epoch + 1} / {self.num_epochs},"
+                    " step {i + 1}/{self.n_total_steps_train},"
+                    "loss = {loss.item():.4f}")
             # epoch end
 
             # eval
-            acc,average_eval_loss = self._fazer_eval()
+            acc, average_eval_loss = self._fazer_eval()
             if (epoch >= self.eval_history_depth):
                 # aqui faz sentido falar de
-                mean_loss = np.mean(loss_eval_hist)
-                mean_acc = np.mean(acc_eval_hist)
+                # TODO Isso aqui a gente não deveria usar em algum lugar?
+                # mean_loss = np.mean(loss_eval_hist)
+                # mean_acc = np.mean(acc_eval_hist)
                 condition = False
                 # podemos trocar condition para ser alguma comparacao entre acc e mean_acc ou o outro par
                 if condition:
@@ -64,7 +66,7 @@ class Evaluate():
             acc_eval_hist[epoch % self.eval_history_depth] = acc
             loss_eval_hist[epoch % self.eval_history_depth] = average_eval_loss
 
-    def test_using(self, loader:DataLoader) -> Tuple[float,float]:
+    def test_using(self, loader: DataLoader) -> Tuple[float, float]:
         with torch.no_grad():
             accumulated_loss = 0
             n_corrects = 0
@@ -82,13 +84,13 @@ class Evaluate():
             # nao eh a media mais contente que eu faria, "but it is fine for now"
             average_loss = accumulated_loss / len(loader)
             acc = n_corrects / n_samples
-            return (acc,average_loss)
+            return (acc, average_loss)
 
-    def _fazer_eval(self) -> Tuple[float,float]:
+    def _fazer_eval(self) -> Tuple[float, float]:
         return self.test_using(self.eval_loader)
 
     def report_final_result(self):
         # testagem final
         acc, average_loss = self.test_using(self.test_loader)
         print((repr(self.model) + '; Criteria: ' + repr(self.criterion) +
-                f'; Desempenho: accuracy equals {acc:.3f}; average loss equals {average_loss:.3f}'))
+               f'; Desempenho: accuracy equals {acc:.3f}; average loss equals {average_loss:.3f}'))
