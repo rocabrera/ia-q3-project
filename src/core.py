@@ -2,7 +2,7 @@ import torch
 import torch.nn
 import numpy as np
 from torch.utils.data import DataLoader
-from src.model import MLP
+from src.model.model import MLP
 from typing import Tuple
 
 
@@ -47,8 +47,8 @@ class Evaluate():
                 self.optimizer.step()
                 print(
                     f"epoch {epoch + 1} / {self.num_epochs},"
-                    " step {i + 1}/{self.n_total_steps_train},"
-                    "loss = {loss.item():.4f}")
+                    f" step {i + 1}/{self.n_total_steps_train},"
+                    f" loss = {loss.item():.4f}")
             # epoch end
 
             # eval
