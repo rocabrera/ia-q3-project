@@ -5,6 +5,7 @@ class MLP(nn.Module):
 
     def __init__(self, model_arch):
         super(MLP, self).__init__()
+        self.arch = model_arch # Este atributo eh necessario para apresentar a arquitetura ao final
         self.camadas = nn.ModuleList([nn.Linear(before, after)
                                       for before, after in model_arch.parse_architecture()])  # achar nomes melhores
 
@@ -20,4 +21,4 @@ class MLP(nn.Module):
         return out
 
     def __repr__(self) -> str:
-        return ('Arch:' + repr(self.arch) + ', activate: ' + repr(self.relu))
+        return ('Arch:' + repr(self.arch) + ', activate: ' + repr(self.activation_function))
