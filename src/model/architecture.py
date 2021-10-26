@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Tuple
 import torch.nn as nn
 
@@ -8,7 +8,8 @@ class ModelArchitecture:
     input_size: int  # Quantidade de features do dataset
     hidden_size: list  # Número de neurônios das camadas intermediárias
     output_size: int = 7  # Quantidade de classes do dataset
-    activation_function: list = [nn.Relu]
+    activation_function: list = field(default_factory=[nn.ReLU()])
+                            # list como atributo requer default_factory, vi solução em stackexchange
 
     def parse_architecture(self) -> List[Tuple[int, int]]:
         """
