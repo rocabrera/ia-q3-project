@@ -7,38 +7,23 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 # in-project imports
 from src.model.model import MLP
-from src.processing.custom_Databases import BeansDataset
+from src.processing.Loader_Factory import Loader_Factory
 import src.processing.raw_data_processing as rdp
 from src.model.architecture import ModelArchitecture
 from src.core import Evaluate
 
 # Spliting data in Train/Eval/Test
-train_pack, eval_pack, test_pack, size_pack = rdp.split_data_from(
-    os.path.join("data", "Dry_Bean_Dataset.xlsx"), 0.2, 0.1)
-# unpacking
-X_test, y_test = test_pack
-X_eval, y_eval = eval_pack
-X_train, y_train = train_pack
+df = rdp.get_dataframe_from(os.path.join("data", "Dry_Bean_Dataset.xlsx"))
+train_pack, eval_pack, test_pack, size_pack, _ = rdp.df_tet_split(df, 0.2, 0.1)
 
 # TODO Essa parte de dataset e dataloader talvez devesse estar em um lugar próprio
-
+    # Era isso que tu queria?
 # datasets and dataloaders
-test_dataset = BeansDataset(X_test.to_numpy(), y_test.to_numpy())
-eval_dataset = BeansDataset(X_eval.to_numpy(), y_eval.to_numpy())
-train_dataset = BeansDataset(X_train.to_numpy(), y_train.to_numpy())
-
 batch_size = 1500
-test_loader = DataLoader(dataset=test_dataset,
-                         shuffle=True,
-                         batch_size=batch_size)
-
-eval_loader = DataLoader(dataset=eval_dataset,
-                         shuffle=True,
-                         batch_size=batch_size)
-
-train_loader = DataLoader(dataset=train_dataset,
-                          shuffle=True,
-                          batch_size=batch_size)
+factory = Loader_Factory(batch_size)
+test_loader = factory.create_loader(test_pack)
+eval_loader = factory.create_loader(eval_pack)
+train_loader = factory.create_loader(train_pack)
 
 ##############################################################################
 
