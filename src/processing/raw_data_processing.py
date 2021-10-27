@@ -1,47 +1,47 @@
 # lib imports
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
 
 # Assume-se que todo dataset tera o formato semelhante ao do beans
 
-"""
-# TODO Essa função tem muitas responsabilidades ... (ler os dados, processar os dados, separar os dados ...) 
-Uma função por responsabilidade.
-"""
+def get_dataframe_from(path):
+    return pd.read_excel(path) # Precisamos dessa funcao ainda? Só faz o read
 
-# TODO Esse eval_size serve para o que?
-
-
-def split_data_from(path, test_size: float, eval_size: float):
-    df = pd.read_excel(path)
+def df_category_split(df:pd.DataFrame):
     y = df["Class"]
+    y = y.astype("category")
 
-    # TODO guardar qual número é referente a qual tipo de beans (Bônus!)
-    y = y.astype("category").cat.codes
-
-    """
-    # TODO Não selecionar as colunas por indice é melhor selecionar por nome
-    # Uma dica seria utilizar a função filter com regex pedindo para selecionar tudo que não for target
-    # (posso mostrar depois) é um pouco complicado. Deve ter outras alternativas mais simples se quiser tentar ...
-    # Ex: Pega todas colunas retira o target e filtra o dataset ...
-    """
-    X = df.iloc[:, :-1]
-    size_output = y.nunique()
+    # TODO what do I do with it? Como eu passo?
+    num_to_type_list = y.cat.categories.to_list() # Aqui a lista que tranforma o numero no tipo
+    
+    y = y.cat.codes
+    X = df.drop("Class", axis=1) # Isso não prejudica y pois este já é outro objeto
+    
+    size_output = len(num_to_type_list)
     size_input = len(X.columns)
+    size_pack = (size_input,size_output)
 
-    # normalizando X
-    X = (X - X.min()) / (X.max() - X.min())
+    return X, y, size_pack, num_to_type_list
+
+def normalize_df(df:pd.DataFrame):
+    scaler = MinMaxScaler()
+    return pd.DataFrame(scaler.fit_transform(df),columns=df.columns)
+
+# tet = Train, Eval, Test
+def df_tet_split(df:pd.DataFrame, test_size: float, eval_size: float):
+    X, y, size_pack, num_to_type_list = df_category_split(df)
+    X = normalize_df(X)
 
     # spliting
     X_forTraining, X_test, y_forTraining, y_test = train_test_split(
         X, y, stratify=y, test_size=test_size, random_state=42)
 
     X_train, X_eval, y_train, y_eval = train_test_split(
-        X_forTraining, y_forTraining, stratify=y_forTraining, test_size=0.1, random_state=33)
+        X_forTraining, y_forTraining, stratify=y_forTraining, test_size=eval_size, random_state=33)
 
     test_pack = (X_test, y_test)
     eval_pack = (X_eval, y_eval)
     train_pack = (X_train, y_train)
-    size_pack = (size_input, size_output)
 
-    return train_pack, eval_pack, test_pack, size_pack
+    return train_pack, eval_pack, test_pack, size_pack, num_to_type_list
