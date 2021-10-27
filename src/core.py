@@ -58,12 +58,11 @@ class Evaluate():
 
             # eval
             acc, average_eval_loss = self._fazer_eval()
-            if (epoch >= self.eval_history_depth):
-                # aqui faz sentido falar de
+            if (epoch >= self.eval_history_depth and epoch%self.eval_history_depth == 0):
                 # TODO Isso aqui a gente não deveria usar em algum lugar?
                 # mean_loss = np.mean(loss_eval_hist)
-                # mean_acc = np.mean(acc_eval_hist)
-                condition = False
+                mean_acc = np.mean(acc_eval_hist)
+                condition = (mean_acc>1.01*acc)
                 # podemos trocar condition para ser alguma comparacao entre acc e mean_acc ou o outro par
                 if condition:
                     break  # stop training
@@ -81,7 +80,7 @@ class Evaluate():
                 targets = targets.to(self.device, dtype=torch.int64)
                 yhat = self.model(inputs).to(self.device)
                 loss = self.criterion(yhat, targets)
-                accumulated_loss += loss
+                accumulated_loss += loss.item()
                 _, prediction = torch.max(yhat, 1)
                 n_samples += targets.shape[0]
                 n_corrects += (prediction == targets).sum().item()
@@ -110,7 +109,8 @@ class Evaluate():
                   "accuracy": acc,
                   
                   # TODO Se quisermos colocar esse parâmetro vamos precisar mandar da cpu para memoria e vice-versa
-                  # "average_loss": average_loss
+                  # ?? I made it work, I think
+                  "average_loss": average_loss
                   }
 
         return pd.Series(report)
