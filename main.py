@@ -1,5 +1,7 @@
 # lib imports
 import os
+from tqdm import tqdm
+import pandas as pd
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -18,9 +20,7 @@ X_test, y_test = test_pack
 X_eval, y_eval = eval_pack
 X_train, y_train = train_pack
 
-"""
 # TODO Essa parte de dataset e dataloader talvez devesse estar em um lugar próprio
-"""
 
 # datasets and dataloaders
 test_dataset = BeansDataset(X_test.to_numpy(), y_test.to_numpy())
@@ -44,24 +44,36 @@ train_loader = DataLoader(dataset=train_dataset,
 
 # model network definition
 n_features, n_classes = size_pack
-arch1 = ModelArchitecture(n_features, [10], n_classes, nn.ReLU())
-model = MLP(arch1)
+archs = [ModelArchitecture(n_features, [10**i], n_classes, nn.ReLU())
+         for i in range(1, 6)]
+models = [MLP(arch) for arch in archs]
+
 
 # TODO Não sei onde essa parte vai, mas eu acho que aqui não está legal
 learn_rate = 0.01
+
 criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=learn_rate)
+
+optimizers = [torch.optim.Adam(
+    model.parameters(), lr=learn_rate) for model in models]
 
 # training definition
 num_epochs = 100
-parameters = (num_epochs, criterion, optimizer)
+
+# TODO Tem problema não instanciar um nn.CrossEntropy por modelo?
+models_parameters = [(num_epochs, criterion, optimizer)
+                     for optimizer in optimizers]
 
 """
 # TODO Esse evaluate está fazendo muita coisa. 
 # Talvez no futuro separa em duas classes onde uma treina e outra prediz
 """
 
-ev1 = Evaluate(model, train_loader, eval_loader, test_loader, parameters)
+results = []
 
-ev1.train()
-ev1.report_final_result()
+for model, parameters in tqdm(zip(models, models_parameters), total=len(models)):
+    ev = Evaluate(model, train_loader, eval_loader, test_loader, parameters)
+    ev.train()
+    results.append(ev.report())
+
+print(pd.concat(results, axis=1).T)
