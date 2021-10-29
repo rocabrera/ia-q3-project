@@ -4,19 +4,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 
 # Assume-se que todo dataset tera o formato semelhante ao do beans
-
-def get_dataframe_from(path):
-    return pd.read_excel(path) # Precisamos dessa funcao ainda? Só faz o read
-
 def df_category_split(df:pd.DataFrame):
     y = df["Class"]
     y = y.astype("category")
 
-    # TODO what do I do with it? Como eu passo?
-    num_to_type_list = y.cat.categories.to_list() # Aqui a lista que tranforma o numero no tipo
+    num_to_type_list = y.cat.categories.to_list() 
     
     y = y.cat.codes
-    X = df.drop("Class", axis=1) # Isso não prejudica y pois este já é outro objeto
+    X = df.drop("Class", axis=1)
     
     size_output = len(num_to_type_list)
     size_input = len(X.columns)
@@ -29,7 +24,7 @@ def normalize_df(df:pd.DataFrame):
     return pd.DataFrame(scaler.fit_transform(df),columns=df.columns)
 
 # tet = Train, Eval, Test
-def df_tet_split(df:pd.DataFrame, test_size: float, eval_size: float):
+def spliting_data(df:pd.DataFrame, test_size: float, eval_size: float):
     X, y, size_pack, num_to_type_list = df_category_split(df)
     X = normalize_df(X)
 
