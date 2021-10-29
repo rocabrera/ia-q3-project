@@ -121,7 +121,6 @@ class Trainer:
         self.parameters = self.define_training(classifier)
         
         if self.is_alredy_trained():
-            print("Already trained")
             return False
         
         acc_eval_hist = np.zeros(self.eval_history_depth, dtype=np.float32)
