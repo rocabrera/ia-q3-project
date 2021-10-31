@@ -29,7 +29,7 @@ train_loader: DataLoader = factory.create_loader(train_pack)
 
 # training definition
 
-num_epochs = [50,100,200,300]
+num_epochs = [50,100] #,200,300]
 
 for num_epoch in tqdm(num_epochs, desc="num_epoch", position=0):
     
@@ -41,8 +41,8 @@ for num_epoch in tqdm(num_epochs, desc="num_epoch", position=0):
     n_features, n_classes = size_pack
 
     activation = nn.ReLU()
-    init = 10
-    end = 100
+    init = 15
+    end = 20
     step = 5
     n_layers = 1
     
@@ -56,9 +56,9 @@ for num_epoch in tqdm(num_epochs, desc="num_epoch", position=0):
     
     models = [MLP(arch) for arch in archs]
     
-    learning_rates = [0.001, 0.01,  0.1, 0.15]
+    learning_rates = [0.001, 0.01] #,  0.1, 0.15]
     
-    for learning_rate in tqdm(learning_rates, desc="learning rate",position=1):
+    for learning_rate in tqdm(learning_rates, desc="learning rate",position=1, leave=False):
         criterion = nn.CrossEntropyLoss()
         optimizers = [torch.optim.Adam(model.parameters(), lr=learning_rate) for model in models]
         classificadores = [Classifier(model, criterion, optimizer) 

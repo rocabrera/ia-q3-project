@@ -74,55 +74,63 @@ class Trainer:
         """
         Essa fução contém as informações necessárias de treinamento
         """
-        (input_size, 
-         hidden_size_per_layer, 
-         _, 
+        (input_size,
+         hidden_size_per_layer,
+         _,
          activation_function) = classifier.model.arch.get_architecture()
-            
+
         model_name = "MLP"
-        criterion = type(classifier.criterion).__name__
-        optimizer = type(classifier.optimizer).__name__
+        criterion_name = type(classifier.criterion).__name__
+        optimizer_name = type(classifier.optimizer).__name__
+        learning_rate = classifier.optimizer.param_groups[0]['lr']
         num_epochs = self.num_epochs
         qtd_hidden_layers = len(hidden_size_per_layer)
-        
-        return  {"model_name": model_name,
-                 "criterion": criterion,
-                 "optimizer": optimizer,
-                 "num_epochs": num_epochs,
-                 "input_size": input_size,
-                 "hidden_layers": list(hidden_size_per_layer),
-                 "qtd_hidden_layers": len(hidden_size_per_layer),
-                 "activation_function": type(activation_function).__name__}
-    
+
+        return {"model_name": model_name,
+                "criterion": criterion_name,
+                "optimizer": optimizer_name,
+                "learning_rate": learning_rate,
+                "num_epochs": num_epochs,
+                "input_size": input_size,
+                "hidden_layers": list(hidden_size_per_layer),
+                "qtd_hidden_layers": len(hidden_size_per_layer),
+                "activation_function": type(activation_function).__name__}
+
     def is_alredy_trained(self):
-        
+
         if os.path.isfile(self.file_result_path):
             already_done = pd.read_csv(self.file_result_path)
-            query = f"""model_name=='{self.parameters["model_name"]}' & \
-                        criterion=='{self.parameters["criterion"]}'   & \
-                        optimizer=='{self.parameters["optimizer"]}'   & \
-                        num_epochs=={self.parameters["num_epochs"]}   & \
-                        input_size=={self.parameters["input_size"]}   & \
-                        activation_function=='{self.parameters["activation_function"]}'
-                     """
-            result = already_done.query(query)
-            
-            temp = (already_done.hidden_layers
-                                .apply(lambda x: x==str(self.parameters["hidden_layers"]))
-                                .any()
-                           )
-            if len(result) and temp:
-                return True
-            else: return False
+            cond_model_name = already_done["model_name"] == self.parameters["model_name"]
+            cond_criterion = already_done["criterion"] == self.parameters["criterion"]
+            cond_optimizer = already_done["optimizer"] == self.parameters["optimizer"]
+            cond_learning_rate = already_done["learning_rate"] == self.parameters["learning_rate"]
+            cond_num_epochs = already_done["num_epochs"] == self.parameters["num_epochs"]
+            cond_input_size = already_done["input_size"] == self.parameters["input_size"]
+            cond_activation_function = already_done["activation_function"] == self.parameters["activation_function"]
+            cond_hidden_layers = (already_done.hidden_layers
+                                  .apply(lambda x: x == str(self.parameters["hidden_layers"])))
 
-    
+            result = already_done[cond_model_name &
+                                  cond_criterion &
+                                  cond_optimizer &
+                                  cond_learning_rate &
+                                  cond_num_epochs &
+                                  cond_input_size &
+                                  cond_activation_function &
+                                  cond_hidden_layers]
+
+            if len(result):
+                return True
+            else:
+                return False
+
     def train(self, classifier: Classifier):
-        
+
         self.parameters = self.define_training(classifier)
-        
+
         if self.is_alredy_trained():
             return False
-        
+
         acc_eval_hist = np.zeros(self.eval_history_depth, dtype=np.float32)
         loss_eval_hist = np.zeros(self.eval_history_depth, dtype=np.float32)
         for epoch in range(self.num_epochs):
@@ -134,7 +142,8 @@ class Trainer:
             # epoch end
 
             # eval
-            acc, average_eval_loss = self.evaluate(classifier, self.eval_loader)
+            acc, average_eval_loss = self.evaluate(
+                classifier, self.eval_loader)
 
             if (epoch >= self.eval_history_depth and epoch % self.eval_history_depth == 0):
                 # TODO Isso aqui a gente não deveria usar em algum lugar?
@@ -146,7 +155,7 @@ class Trainer:
 
             acc_eval_hist[epoch % self.eval_history_depth] = acc
             loss_eval_hist[epoch % self.eval_history_depth] = average_eval_loss
-        
+
         return True
 
     def evaluate(self, classifier: Classifier, loader: DataLoader):
@@ -161,24 +170,23 @@ class Trainer:
         acc = corrects / samples
         average_eval_loss = accumulated_loss / len(loader)
         return acc, average_eval_loss
-        
+
         # TODO Precisa de pd.DataFrame ... tentar trocar para pd.Series
-    def save_df(self, parameters:dict):
+    def save_df(self, parameters: dict):
         with open(self.file_result_path, 'a') as f:
             df = pd.DataFrame([parameters])
-            df.to_csv(f, mode='a', header=f.tell()==0, index=False)
-            
+            df.to_csv(f, mode='a', header=f.tell() == 0, index=False)
+
     def save_report(self, classifier: Classifier):
         # testagem final
         acc, average_loss = self.evaluate(classifier, self.test_loader)
-        
-        (input_size, 
-         hidden_size_per_layer, 
-         _, 
+
+        (input_size,
+         hidden_size_per_layer,
+         _,
          activation_function) = classifier.model.arch.get_architecture()
-        
+
         self.parameters["accuracy"] = acc
         self.parameters["average_loss"] = average_loss
-        
+
         self.save_df(self.parameters)
-        
