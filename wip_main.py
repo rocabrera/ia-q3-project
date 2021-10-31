@@ -13,7 +13,6 @@ import src.processing.data_processing as dp
 from src.model.architecture import ArchitectureBuilder
 from src.core import Trainer, Classifier
 
-
 # Loading data
 df = pd.read_excel(os.path.join("data", "Dry_Bean_Dataset.xlsx"))
 

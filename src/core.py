@@ -10,6 +10,8 @@ import torch.nn
 import numpy as np
 import pandas as pd
 from torch.utils.data import DataLoader
+from src.logger.logging import logger
+from pathlib import Path
 
 
 class Classifier:
@@ -67,6 +69,8 @@ class Trainer:
         # Pensar onde vão esses parêmtros depois
         self.eval_history_depth = 10
         self.folder_results = "results"
+        Path(self.folder_results).mkdir(parents=True, exist_ok=True)
+        
         self.file_result_path = os.path.join(self.folder_results,
                                              "model_results.csv")
 
@@ -120,6 +124,7 @@ class Trainer:
                                   cond_hidden_layers]
 
             if len(result):
+                logger.info(f'Already trained: lr = {self.parameters["learning_rate"]}, num_epochs = {self.parameters["num_epochs"]}, hidden_layers = {str(self.parameters["hidden_layers"])}')
                 return True
             else:
                 return False
