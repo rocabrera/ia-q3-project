@@ -28,7 +28,13 @@ train_loader: DataLoader = factory.create_loader(train_pack)
 
 # training definition
 
-num_epochs = [50,100] #,200,300]
+num_epochs = [50, 100, 200, 300]
+learning_rates = [0.001, 0.01,  0.1, 0.15]
+
+init = 2
+end = 20
+step = 2
+n_layers = 3
 
 for num_epoch in tqdm(num_epochs, desc="num_epoch", position=0):
     
@@ -40,10 +46,6 @@ for num_epoch in tqdm(num_epochs, desc="num_epoch", position=0):
     n_features, n_classes = size_pack
 
     activation = nn.ReLU()
-    init = 15
-    end = 20
-    step = 5
-    n_layers = 1
     
     archs = ArchitectureBuilder(n_features, 
                                  n_classes, 
@@ -55,7 +57,6 @@ for num_epoch in tqdm(num_epochs, desc="num_epoch", position=0):
     
     models = [MLP(arch) for arch in archs]
     
-    learning_rates = [0.001, 0.01] #,  0.1, 0.15]
     
     for learning_rate in tqdm(learning_rates, desc="learning rate",position=1, leave=False):
         criterion = nn.CrossEntropyLoss()
@@ -63,6 +64,6 @@ for num_epoch in tqdm(num_epochs, desc="num_epoch", position=0):
         classificadores = [Classifier(model, criterion, optimizer) 
                            for (model, optimizer) in zip(models, optimizers)]
 
-        for classificador in tqdm(classificadores, total=len(classificadores), desc="classifier", position=2, leave=False):
+        for classificador in tqdm(classificadores, total=len(classificadores), desc="architecture", position=2, leave=False):
             if trainer.train(classificador):
                 trainer.save_report(classificador)
